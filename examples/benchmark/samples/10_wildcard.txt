@@ -1,0 +1,8 @@
+a.*z
+
+az
+axyzz
+axyzxyzz
+aq
+axyzq
+axyzxyzq

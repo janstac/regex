@@ -1,0 +1,11 @@
+(ab|cd)ef
+
+abef
+cdef
+
+ef
+abcdef
+ab
+cd
+Abef
+abeef

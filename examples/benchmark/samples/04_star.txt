@@ -1,0 +1,9 @@
+ab*c
+
+ac
+abc
+abbc
+abbbbbbbbc
+ad
+abd
+abbd

@@ -15,6 +15,7 @@ target_include_directories(reg PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 add_subdirectory(examples/testParse)
 add_subdirectory(examples/testMatch)
+add_subdirectory(examples/benchmark)
 
 include(CTest)
 if(BUILD_TESTING)

@@ -1,0 +1,15 @@
+^(Mr|Ms|Dr)\. (Ada|Bob|Eve)( Smith)?$
+
+Mr. Ada
+Mr. Ada Smith
+Mr. Bob
+Mr. Eve Smith
+Ms. Bob
+Ms. Eve Smith
+Dr. Eve
+Dr. Eve Smith
+
+Mr Ada
+Mr.  Ada
+Dr. Eve Smith 
+Mr. Adax

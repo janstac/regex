@@ -1,0 +1,10 @@
+(ab)+c?
+
+
+c
+abc
+abab
+abababc
+abababababababab
+abd
+ababd

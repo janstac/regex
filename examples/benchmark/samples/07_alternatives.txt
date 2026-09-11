@@ -1,0 +1,11 @@
+cat|dog|bird
+
+cat
+dog
+bird
+
+Cat
+dogs
+birdcat
+ cat
+bird 

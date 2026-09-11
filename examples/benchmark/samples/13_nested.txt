@@ -1,0 +1,8 @@
+((ab|a)c?)+d*
+
+abcacd
+abcacabcacdd
+abcacabcacabcacabcac
+
+abx
+ababx
