@@ -12,10 +12,8 @@ struct Tests {
         if (passed)
             return;
         ++failures;
-        std::cerr << where.file_name() << ':' << where.line()
-                  << ": failed: " << expression << '\n';
+        std::cerr << where.file_name() << ':' << where.line() << ": failed: " << expression << '\n';
     }
 };
 
-#define CHECK(tests, expression) \
-    (tests).check(static_cast<bool>(expression), #expression)
+#define CHECK(tests, expression) (tests).check(static_cast<bool>(expression), #expression)

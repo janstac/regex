@@ -9,14 +9,17 @@ add_compile_options(
 )
 
 add_library(reg src/ast.h src/parser.cpp src/parser.h)
+target_sources(reg PRIVATE src/bytecode.h src/compiler.h src/compiler.cpp src/vm.h src/vm.cpp)
 target_compile_features(reg PUBLIC cxx_std_23)
 target_include_directories(reg PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 add_subdirectory(examples/testParse)
+add_subdirectory(examples/testMatch)
 
 include(CTest)
 if(BUILD_TESTING)
     add_executable(reg_tests tests/main.cpp tests/parser_test.cpp)
+    target_sources(reg_tests PRIVATE tests/compiler_test.cpp tests/vm_test.cpp tests/regex_test.cpp)
     target_link_libraries(reg_tests PRIVATE reg)
     add_test(NAME reg_tests COMMAND reg_tests)
     set_tests_properties(reg_tests PROPERTIES TIMEOUT 10)
