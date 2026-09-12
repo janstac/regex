@@ -1,6 +1,7 @@
 #include "vm.h"
 
 #include <functional>
+#include <cstdint>
 #include <unordered_set>
 
 namespace reg {
@@ -25,6 +26,45 @@ class VM {
         }
     };
 
+    class VisitedStates {
+        static constexpr std::size_t max_bitmap_bits = 1024 * 1024 * 8;
+        std::size_t mInstructionCount;
+        bool mDense = false;
+        std::vector<std::uint64_t> mBits;
+        std::unordered_set<State, StateHash> mSparse;
+
+      public:
+        VisitedStates(std::size_t instructions, std::size_t input_size)
+            : mInstructionCount(instructions) {
+            // Include end-of-input states. Divide first to avoid overflow.
+            // Use sparse storage when the bitmap would exceed 1 MiB.
+            if (instructions && input_size < max_bitmap_bits / instructions) {
+                const auto states = (input_size + 1) * instructions;
+                mBits.resize((states + 63) / 64);
+                mDense = true;
+            }
+        }
+
+        bool contains(const State &state) const {
+            if (!mDense)
+                return mSparse.contains(state);
+            const auto index = state.input_pos * mInstructionCount + state.address;
+            return (mBits[index / 64] & (std::uint64_t{1} << (index % 64))) != 0;
+        }
+
+        // True for a newly visited state, false for a previously visited one.
+        bool insert(const State &state) {
+            if (!mDense)
+                return mSparse.insert(state).second;
+            const auto index = state.input_pos * mInstructionCount + state.address;
+            auto &word = mBits[index / 64];
+            const auto mask = std::uint64_t{1} << (index % 64);
+            const bool existed = (word & mask) != 0;
+            word |= mask;
+            return !existed;
+        }
+    };
+
     enum class Step { Continue, Fail, Accept };
     using StepResult = std::expected<Step, ExecutionError>;
 
@@ -35,25 +75,32 @@ class VM {
     std::vector<State> mStack;
 
     /// Set of visited states. Checked to prevent cycles.
-    std::unordered_set<State, StateHash> mVisited;
+    VisitedStates mVisited;
 
   public:
     VM(const bytecode::Program &program, std::string_view input, ExecutionLimits limits)
-        : mProgram(program), mInput(input), mLimits(limits) {}
+        : mProgram(program), mInput(input), mLimits(limits),
+          mVisited(program.instructions.size(), input.size()) {}
 
     ExecutionResult run() {
         std::size_t executed_states_count = 0;
         while (true) {
-            if (mVisited.contains(mState)) {
+            bool already_visited;
+            if (executed_states_count >= mLimits.max_visited_states) {
+                // At the limit, revisits may still backtrack, but new states
+                // must fail without being inserted.
+                if (!mVisited.contains(mState))
+                    return std::unexpected(ExecutionError{ExecutionErrorKind::StateLimitExceeded});
+                already_visited = true;
+            } else {
+                already_visited = !mVisited.insert(mState);
+            }
+            if (already_visited) {
                 if (!backtrack()) {
                     return false;
                 }
                 continue;
             }
-            if (executed_states_count >= mLimits.max_visited_states) {
-                return std::unexpected(ExecutionError{ExecutionErrorKind::StateLimitExceeded});
-            }
-            mVisited.insert(mState);
             ++executed_states_count;
             auto result =
                 std::visit([this](const auto &instruction) { return handle(instruction); },
