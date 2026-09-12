@@ -1,0 +1,6 @@
+find_package(Threads REQUIRED)
+add_library(grep_pipeline STATIC pipeline.cpp)
+target_include_directories(grep_pipeline PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+target_link_libraries(grep_pipeline PUBLIC reg PRIVATE Threads::Threads)
+add_executable(grep main.cpp)
+target_link_libraries(grep PRIVATE grep_pipeline Threads::Threads)
